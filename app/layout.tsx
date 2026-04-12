@@ -39,9 +39,12 @@ export default function RootLayout({
   return (
     <html
       lang="zh-Hant"
-      className={`${geistSans.variable} ${geistMono.variable} ${vt323.variable} h-full`}
+      translate="no"
+      className={`notranslate ${geistSans.variable} ${geistMono.variable} ${vt323.variable} h-full`}
     >
       <head>
+        {/* Avoid Chrome / Edge DOM translation on public hostnames (breaks controlled inputs). */}
+        <meta name="google" content="notranslate" />
         <link
           rel="preload"
           href="/fonts/unifont-17.0.03.otf"

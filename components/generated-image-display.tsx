@@ -2,35 +2,48 @@
 
 import Image from "next/image";
 
+export type OutputImageTriplet = readonly [
+  string | null,
+  string | null,
+  string | null,
+];
+
 type GeneratedImageDisplayProps = {
-  src: string | null;
-  alt?: string;
+  srcs: OutputImageTriplet;
 };
 
-export function GeneratedImageDisplay({
-  src,
-  alt = "生成结果",
-}: GeneratedImageDisplayProps) {
+const defaultAlts = ["生成结果 1", "生成结果 2", "生成结果 3"] as const;
+
+export function GeneratedImageDisplay({ srcs }: GeneratedImageDisplayProps) {
   return (
-    <div className="w-full overflow-hidden rounded border-2 border-[var(--aitelier-border)] bg-[var(--aitelier-surface)]">
-      <div className="relative mx-auto aspect-square w-full max-w-lg max-h-[min(85vw,28rem)] bg-[var(--aitelier-bg)]">
-        {src ? (
-          <Image
-            src={src}
-            alt={alt}
-            fill
-            className="object-contain bg-[var(--aitelier-input-bg)]"
-            sizes="(max-width: 768px) 100vw, 28rem"
-            unoptimized={src.startsWith("data:")}
-          />
-        ) : (
-          <div className="font-unifont absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center text-sm [color:var(--aitelier-text-muted)]">
-            <span className="text-3xl leading-none opacity-50" aria-hidden>
-              ◇
-            </span>
-            <p style={{ letterSpacing: "0.12em" }}>生成后的图片会显示在这里</p>
+    <div className="w-full overflow-hidden rounded border-2 border-[var(--aitelier-border)] bg-[var(--aitelier-surface)] p-2">
+      <div className="grid grid-cols-3 gap-2">
+        {srcs.map((src, i) => (
+          <div
+            key={i}
+            className="min-w-0 overflow-hidden rounded border border-[var(--aitelier-border)] bg-[var(--aitelier-bg)]"
+          >
+            <div className="relative aspect-square w-full min-w-0 bg-[var(--aitelier-bg)]">
+              {src ? (
+                <Image
+                  src={src}
+                  alt={defaultAlts[i] ?? `生成结果 ${i + 1}`}
+                  fill
+                  className="object-contain bg-[var(--aitelier-input-bg)]"
+                  sizes="(max-width: 768px) 30vw, 16rem"
+                  unoptimized={src.startsWith("data:")}
+                />
+              ) : (
+                <div className="pointer-events-none font-unifont absolute inset-0 flex flex-col items-center justify-center gap-1 px-1 text-center text-[10px] leading-tight [color:var(--aitelier-text-muted)] sm:gap-2 sm:px-2 sm:text-xs">
+                  <span className="text-lg leading-none opacity-50 sm:text-2xl" aria-hidden>
+                    ◇
+                  </span>
+                  <p style={{ letterSpacing: "0.08em" }}>预览</p>
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
