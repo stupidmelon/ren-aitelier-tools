@@ -1,9 +1,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import type { AspectRatioValue } from "@/components/aspect-ratio-select";
+import { AspectRatioSelect } from "@/components/aspect-ratio-select";
+import { DenoiseSlider } from "@/components/denoise-slider";
 import { GenerateTextButton } from "@/components/generate-text-button";
-import { ImageDisplay } from "@/components/image-display";
-import { TextInputBox } from "@/components/text-input-box";
+import { GeneratedImageDisplay } from "@/components/generated-image-display";
+import { PromptTextInput } from "@/components/prompt-text-input";
+import { ReferenceImageUpload } from "@/components/reference-image-upload";
 
 /** Replace with a real image URL once the API is connected. */
 const previewPlaceholderSrc =
@@ -14,13 +18,20 @@ const previewPlaceholderSrc =
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [referenceFile, setReferenceFile] = useState<File | null>(null);
+  const [denoise, setDenoise] = useState(50);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatioValue>("1:1");
+  const [outputSrc, setOutputSrc] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  const handleReferenceFileChange = useCallback((file: File | null) => {
+    setReferenceFile(file);
+  }, []);
 
   const handleGenerate = useCallback(() => {
     setPending(true);
     window.setTimeout(() => {
-      setImageSrc(previewPlaceholderSrc);
+      setOutputSrc(previewPlaceholderSrc);
       setPending(false);
     }, 350);
   }, []);
@@ -44,17 +55,43 @@ export default function Home() {
         </header>
 
         <section className="flex min-h-0 flex-1 flex-col gap-4">
-          <TextInputBox
+          {/* Row 1 */}
+          <PromptTextInput
             value={prompt}
             onChange={setPrompt}
             disabled={pending}
           />
+
+          {/* Row 2 */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-stretch">
+            <ReferenceImageUpload
+              file={referenceFile}
+              onFileChange={handleReferenceFileChange}
+              disabled={pending}
+            />
+            <div className="flex min-h-0 flex-col gap-3">
+              <DenoiseSlider
+                value={denoise}
+                onChange={setDenoise}
+                disabled={pending}
+              />
+              <AspectRatioSelect
+                value={aspectRatio}
+                onChange={setAspectRatio}
+                disabled={pending}
+              />
+            </div>
+          </div>
+
+          {/* Row 3 */}
           <GenerateTextButton
             onClick={handleGenerate}
             pending={pending}
             disabled={!prompt.trim()}
           />
-          <ImageDisplay src={imageSrc} />
+
+          {/* Row 4 */}
+          <GeneratedImageDisplay src={outputSrc} />
         </section>
       </main>
     </div>

@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- matches v0-renaitelier-waitlist homepage pattern */
 
-type TextInputBoxProps = {
+type PromptTextInputProps = {
   value: string;
   onChange: (value: string) => void;
   id?: string;
@@ -10,13 +10,13 @@ type TextInputBoxProps = {
   disabled?: boolean;
 };
 
-export function TextInputBox({
+export function PromptTextInput({
   value,
   onChange,
   id = "prompt",
   placeholder = "//输入提示词…",
   disabled = false,
-}: TextInputBoxProps) {
+}: PromptTextInputProps) {
   return (
     <div className="w-full">
       <label htmlFor={id} className="sr-only">

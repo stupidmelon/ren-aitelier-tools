@@ -2,12 +2,15 @@
 
 import Image from "next/image";
 
-type ImageDisplayProps = {
+type GeneratedImageDisplayProps = {
   src: string | null;
   alt?: string;
 };
 
-export function ImageDisplay({ src, alt = "生成结果" }: ImageDisplayProps) {
+export function GeneratedImageDisplay({
+  src,
+  alt = "生成结果",
+}: GeneratedImageDisplayProps) {
   return (
     <div className="w-full overflow-hidden rounded border-2 border-[var(--aitelier-border)] bg-[var(--aitelier-surface)]">
       <div className="relative mx-auto aspect-square w-full max-w-lg max-h-[min(85vw,28rem)] bg-[var(--aitelier-bg)]">
