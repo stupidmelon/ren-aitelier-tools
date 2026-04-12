@@ -9,23 +9,23 @@ type ImageDisplayProps = {
 
 export function ImageDisplay({ src, alt = "生成结果" }: ImageDisplayProps) {
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-dashed border-zinc-300 bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900/50">
-      <div className="relative aspect-square w-full max-h-[min(85vw,28rem)] mx-auto max-w-lg">
+    <div className="w-full overflow-hidden rounded border-2 border-[var(--aitelier-border)] bg-[var(--aitelier-surface)]">
+      <div className="relative mx-auto aspect-square w-full max-w-lg max-h-[min(85vw,28rem)] bg-[var(--aitelier-bg)]">
         {src ? (
           <Image
             src={src}
             alt={alt}
             fill
-            className="object-contain bg-zinc-100 dark:bg-zinc-950"
+            className="object-contain bg-[var(--aitelier-input-bg)]"
             sizes="(max-width: 768px) 100vw, 28rem"
             unoptimized={src.startsWith("data:")}
           />
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-            <span className="text-4xl leading-none opacity-40" aria-hidden>
+          <div className="font-unifont absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center text-sm [color:var(--aitelier-text-muted)]">
+            <span className="text-3xl leading-none opacity-50" aria-hidden>
               ◇
             </span>
-            <p>生成后的图片会显示在这里</p>
+            <p style={{ letterSpacing: "0.12em" }}>生成后的图片会显示在这里</p>
           </div>
         )}
       </div>

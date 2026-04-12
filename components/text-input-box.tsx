@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- matches v0-renaitelier-waitlist homepage pattern */
+
 type TextInputBoxProps = {
   value: string;
   onChange: (value: string) => void;
@@ -12,7 +14,7 @@ export function TextInputBox({
   value,
   onChange,
   id = "prompt",
-  placeholder = "输入提示词…",
+  placeholder = "//输入提示词…",
   disabled = false,
 }: TextInputBoxProps) {
   return (
@@ -20,16 +22,28 @@ export function TextInputBox({
       <label htmlFor={id} className="sr-only">
         提示词
       </label>
-      <textarea
-        id={id}
-        name="prompt"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        rows={5}
-        placeholder={placeholder}
-        className="box-border min-h-[7.5rem] w-full resize-y rounded-xl border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 shadow-sm outline-none ring-zinc-400/40 transition-[box-shadow,border-color] placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-600/40"
-      />
+      <div className="relative min-h-[7.5rem] w-full">
+        <img
+          src="/homepage/enter-email-box.png"
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="pointer-events-none absolute inset-0 size-full object-fill select-none"
+        />
+        <textarea
+          id={id}
+          name="prompt"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          rows={5}
+          placeholder={placeholder}
+          className="font-unifont relative z-10 box-border min-h-[7.5rem] w-full resize-y border-none bg-transparent px-4 py-3 text-base leading-normal outline-none [color:var(--aitelier-text)] placeholder:[color:var(--aitelier-placeholder)] focus-visible:ring-2 focus-visible:ring-[var(--aitelier-border-dark)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--aitelier-bg)] disabled:cursor-not-allowed disabled:opacity-60"
+          style={{
+            letterSpacing: "0.14em",
+          }}
+        />
+      </div>
     </div>
   );
 }
