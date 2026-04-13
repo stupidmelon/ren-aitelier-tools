@@ -1,0 +1,231 @@
+{
+  "8": {
+    "inputs": {
+      "samples": [
+        "36",
+        0
+      ],
+      "vae": [
+        "37",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "14": {
+    "inputs": {
+      "ckpt_name": "noobaiXLNAIXL_vPred10Version.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint Base"
+    }
+  },
+  "16": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "crop_w": 0,
+      "crop_h": 0,
+      "target_width": 1024,
+      "target_height": 1024,
+      "text_g": "(coredream), ((object on blank background)),((blank background))\n\nOctagonal tabletop, curved edges, sculpted central pedestal, ornate splayed feet, scroll details, pedestal base, carved ornamentation, relief details, robust construction, Rococo style, Baroque influence, opulent design, luxurious, traditional, antique-inspired, highly decorative, elaborate, rich brown wood, antique white, gilded gold, two-tone, contrasting palette.",
+      "text_l": "(coredream), ((object on blank background)),((blank background))\n\nOctagonal tabletop, curved edges, sculpted central pedestal, ornate splayed feet, scroll details, pedestal base, carved ornamentation, relief details, robust construction, Rococo style, Baroque influence, opulent design, luxurious, traditional, antique-inspired, highly decorative, elaborate, rich brown wood, antique white, gilded gold, two-tone, contrasting palette.",
+      "clip": [
+        "56",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncodeSDXL",
+    "_meta": {
+      "title": "CLIPTextEncodeSDXL"
+    }
+  },
+  "19": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "crop_w": 0,
+      "crop_h": 0,
+      "target_width": 1024,
+      "target_height": 1024,
+      "text_g": "((1 girl)), ((face)), ((girl)), texts, ((character)), ((human)), nsfw, 2 girls, source_pony, source_furry, derpibooru_p_low, censored",
+      "text_l": "((1 girl)), ((face)), ((girl)), texts, ((character)), ((human)), nsfw, 2 girls, source_pony, source_furry, derpibooru_p_low, censored",
+      "clip": [
+        "56",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncodeSDXL",
+    "_meta": {
+      "title": "CLIPTextEncodeSDXL"
+    }
+  },
+  "36": {
+    "inputs": {
+      "seed": 546581385707528,
+      "steps": 15,
+      "cfg": 5,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "exponential",
+      "denoise": 0.39,
+      "model": [
+        "56",
+        0
+      ],
+      "positive": [
+        "16",
+        0
+      ],
+      "negative": [
+        "19",
+        0
+      ],
+      "latent_image": [
+        "39",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "37": {
+    "inputs": {
+      "vae_name": "sdxl_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "38": {
+    "inputs": {
+      "image": "Weixin Image_20260401220713_5911_3.jpg"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "39": {
+    "inputs": {
+      "pixels": [
+        "117",
+        0
+      ],
+      "vae": [
+        "37",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "55": {
+    "inputs": {
+      "switch_1": "Off",
+      "lora_name_1": "None",
+      "model_weight_1": 0.8,
+      "clip_weight_1": 0.8,
+      "switch_2": "Off",
+      "lora_name_2": "None",
+      "model_weight_2": 0.8,
+      "clip_weight_2": 0.8,
+      "switch_3": "On",
+      "lora_name_3": "Noob-coredream-260129.safetensors",
+      "model_weight_3": 1,
+      "clip_weight_3": 1
+    },
+    "class_type": "CR LoRA Stack",
+    "_meta": {
+      "title": "💊 CR LoRA Stack"
+    }
+  },
+  "56": {
+    "inputs": {
+      "model": [
+        "14",
+        0
+      ],
+      "clip": [
+        "14",
+        1
+      ],
+      "lora_stack": [
+        "55",
+        0
+      ]
+    },
+    "class_type": "CR Apply LoRA Stack",
+    "_meta": {
+      "title": "💊 CR Apply LoRA Stack"
+    }
+  },
+  "115": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent Image"
+    }
+  },
+  "117": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "width": 1024,
+      "height": 1024,
+      "crop": "disabled",
+      "image": [
+        "38",
+        0
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale Image"
+    }
+  },
+  "121": {
+    "inputs": {
+      "model": "RMBG-2.0",
+      "sensitivity": 1,
+      "process_res": 1024,
+      "mask_blur": 0,
+      "mask_offset": 0,
+      "invert_output": false,
+      "refine_foreground": false,
+      "background": "Alpha",
+      "background_color": "#222222",
+      "image": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "RMBG",
+    "_meta": {
+      "title": "Remove Background (RMBG)"
+    }
+  },
+  "122": {
+    "inputs": {
+      "images": [
+        "121",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  }
+}

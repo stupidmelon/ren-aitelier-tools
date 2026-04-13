@@ -5,18 +5,14 @@ import type { AspectRatioValue } from "@/components/aspect-ratio-select";
 import { AspectRatioSelect } from "@/components/aspect-ratio-select";
 import { DenoiseSlider } from "@/components/denoise-slider";
 import { GenerateTextButton } from "@/components/generate-text-button";
-import { GeneratedImageDisplay } from "@/components/generated-image-display";
+import {
+  GeneratedImageDisplay,
+  type SlotProgressTriplet,
+} from "@/components/generated-image-display";
 import { PromptTextInput } from "@/components/prompt-text-input";
 import { ReferenceImageUpload } from "@/components/reference-image-upload";
 import type { SectionOption } from "@/components/section-dropdown";
 import { SectionDropdown } from "@/components/section-dropdown";
-
-/** Replace with a real image URL once the API is connected. */
-const previewPlaceholderSrc =
-  "data:image/svg+xml," +
-  encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect fill="%23ebebeb" width="512" height="512"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23737373" font-family="system-ui,sans-serif" font-size="22">预览</text></svg>`,
-  );
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
@@ -31,22 +27,127 @@ export default function Home() {
   /** English keywords from DeepSeek; editable alongside Chinese. */
   const [englishTranslation, setEnglishTranslation] = useState("");
   const [topSection, setTopSection] = useState<SectionOption>("assets");
+  const [slotProgress, setSlotProgress] = useState<SlotProgressTriplet | null>(
+    null,
+  );
 
   const handleReferenceFileChange = useCallback((file: File | null) => {
     setReferenceFile(file);
   }, []);
 
-  const handleGenerate = useCallback(() => {
+  const handleGenerate = useCallback(async () => {
+    if (!referenceFile) {
+      window.alert("请先上传参考图");
+      return;
+    }
+
     setPending(true);
-    window.setTimeout(() => {
-      setOutputSrcs([
-        previewPlaceholderSrc,
-        previewPlaceholderSrc,
-        previewPlaceholderSrc,
-      ]);
+    setOutputSrcs([null, null, null]);
+    setSlotProgress([0, 0, 0]);
+
+    const form = new FormData();
+    form.append("section", topSection);
+    form.append("denoise", String(denoise));
+    form.append("aspectRatio", aspectRatio);
+    form.append("englishPrompt", englishTranslation.trim());
+    form.append("image", referenceFile);
+
+    try {
+      const res = await fetch("/api/comfyui/generate", {
+        method: "POST",
+        body: form,
+      });
+
+      if (!res.ok) {
+        const ct = res.headers.get("content-type") ?? "";
+        if (ct.includes("application/json")) {
+          const data = (await res.json()) as { error?: string };
+          throw new Error(data.error ?? "生成失败");
+        }
+        throw new Error(`生成失败 (${res.status})`);
+      }
+
+      if (!res.body) {
+        throw new Error("服务器未返回数据流");
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      const handleEvent = (raw: string) => {
+        const line = raw
+          .split("\n")
+          .find((l) => l.startsWith("data: "));
+        if (!line) return;
+        let payload: unknown;
+        try {
+          payload = JSON.parse(line.slice(6).trim());
+        } catch {
+          return;
+        }
+        if (!payload || typeof payload !== "object") return;
+        const ev = payload as {
+          type?: string;
+          slots?: number[];
+          index?: number;
+          image?: string;
+          message?: string;
+        };
+
+        if (ev.type === "progress" && Array.isArray(ev.slots) && ev.slots.length === 3) {
+          setSlotProgress([ev.slots[0]!, ev.slots[1]!, ev.slots[2]!]);
+          return;
+        }
+        if (
+          ev.type === "slot" &&
+          typeof ev.index === "number" &&
+          ev.index >= 0 &&
+          ev.index <= 2 &&
+          typeof ev.image === "string"
+        ) {
+          const idx = ev.index;
+          setOutputSrcs((prev) => {
+            const next: [string | null, string | null, string | null] = [
+              prev[0],
+              prev[1],
+              prev[2],
+            ];
+            next[idx] = ev.image!;
+            return next;
+          });
+          return;
+        }
+        if (ev.type === "error" && typeof ev.message === "string") {
+          throw new Error(ev.message);
+        }
+      };
+
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        for (;;) {
+          const sep = buffer.indexOf("\n\n");
+          if (sep === -1) break;
+          const block = buffer.slice(0, sep);
+          buffer = buffer.slice(sep + 2);
+          handleEvent(block);
+        }
+      }
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "生成失败");
+    } finally {
       setPending(false);
-    }, 350);
-  }, []);
+      setSlotProgress(null);
+    }
+  }, [
+    aspectRatio,
+    denoise,
+    englishTranslation,
+    referenceFile,
+    topSection,
+  ]);
 
   const handleTranslatePrompt = useCallback(async () => {
     const text = prompt.trim();
@@ -143,15 +244,23 @@ export default function Home() {
 
           {/* Row 3 */}
           <GenerateTextButton
-            onClick={handleGenerate}
+            onClick={() => {
+              void handleGenerate();
+            }}
             pending={pending}
             disabled={
-              (!prompt.trim() && !englishTranslation.trim()) || translatePending
+              !referenceFile ||
+              (!prompt.trim() && !englishTranslation.trim()) ||
+              translatePending
             }
           />
 
           {/* Row 4 */}
-          <GeneratedImageDisplay srcs={outputSrcs} />
+          <GeneratedImageDisplay
+            srcs={outputSrcs}
+            slotProgress={slotProgress}
+            showProgressOverlay={pending}
+          />
         </section>
       </main>
     </div>
