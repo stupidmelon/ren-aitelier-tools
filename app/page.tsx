@@ -248,11 +248,7 @@ export default function Home() {
               void handleGenerate();
             }}
             pending={pending}
-            disabled={
-              !referenceFile ||
-              (!prompt.trim() && !englishTranslation.trim()) ||
-              translatePending
-            }
+            disabled={!referenceFile || translatePending}
           />
 
           {/* Row 4 */}
