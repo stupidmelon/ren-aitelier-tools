@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useState } from "react";
 import type { AspectRatioValue } from "@/components/aspect-ratio-select";
 import { AspectRatioSelect } from "@/components/aspect-ratio-select";
@@ -30,6 +31,9 @@ export default function Home() {
   const [slotProgress, setSlotProgress] = useState<SlotProgressTriplet | null>(
     null,
   );
+  const [savePending, setSavePending] = useState<
+    readonly [boolean, boolean, boolean]
+  >([false, false, false]);
 
   const handleReferenceFileChange = useCallback((file: File | null) => {
     setReferenceFile(file);
@@ -149,6 +153,44 @@ export default function Home() {
     topSection,
   ]);
 
+  const handleSaveSlot = useCallback(async (index: number) => {
+    const src = outputSrcs[index];
+    if (!src || !src.startsWith("data:image/png")) {
+      window.alert("此格尚無可保存的 PNG");
+      return;
+    }
+
+    setSavePending((prev) => {
+      const next: [boolean, boolean, boolean] = [prev[0], prev[1], prev[2]];
+      next[index] = true;
+      return next;
+    });
+    try {
+      const res = await fetch("/api/gallery/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: src }),
+      });
+      const data = (await res.json()) as { error?: string; filename?: string };
+      if (!res.ok) {
+        throw new Error(data.error ?? "保存失敗");
+      }
+      window.alert(
+        typeof data.filename === "string"
+          ? `已保存：${data.filename}`
+          : "已保存到伺服器圖庫資料夾",
+      );
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "保存失敗");
+    } finally {
+      setSavePending((prev) => {
+        const next: [boolean, boolean, boolean] = [prev[0], prev[1], prev[2]];
+        next[index] = false;
+        return next;
+      });
+    }
+  }, [outputSrcs]);
+
   const handleTranslatePrompt = useCallback(async () => {
     const text = prompt.trim();
     if (!text || translatePending || pending) return;
@@ -158,7 +200,7 @@ export default function Home() {
       const res = await fetch("/api/translate-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, section: topSection }),
       });
       const data = (await res.json()) as { translated?: string; error?: string };
       if (!res.ok) {
@@ -172,7 +214,7 @@ export default function Home() {
     } finally {
       setTranslatePending(false);
     }
-  }, [pending, prompt, translatePending]);
+  }, [pending, prompt, topSection, translatePending]);
 
   const controlsLocked = pending || translatePending;
 
@@ -193,6 +235,15 @@ export default function Home() {
                 style={{ letterSpacing: "0.12em" }}
               >
                 输入文本并生成（界面预览）
+              </p>
+              <p className="font-unifont mt-2 text-xs text-[var(--aitelier-text-muted)]">
+                <Link
+                  href="/gallery"
+                  className="underline decoration-[var(--aitelier-border-dark)] underline-offset-4 transition-opacity hover:opacity-80"
+                  style={{ letterSpacing: "0.12em" }}
+                >
+                  圖庫
+                </Link>
               </p>
             </div>
             <SectionDropdown value={topSection} onChange={setTopSection} />
@@ -256,6 +307,10 @@ export default function Home() {
             srcs={outputSrcs}
             slotProgress={slotProgress}
             showProgressOverlay={pending}
+            onSaveSlot={(i) => {
+              void handleSaveSlot(i);
+            }}
+            savePending={savePending}
           />
         </section>
       </main>
